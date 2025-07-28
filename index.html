@@ -54,7 +54,17 @@
             padding: 5px 10px;
         }
         .player-info { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold-main); }
+        .avatar { 
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
+            border: 2px solid var(--gold-main);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .avatar:hover {
+            transform: scale(1.1);
+        }
         .player-name { font-size: 1.5em; font-weight: 700; }
         .balance { font-size: 1.6em; font-weight: 700; color: var(--gold-light); }
         .top-bar-icons { display: flex; gap: 15px; }
@@ -267,7 +277,88 @@
             padding: 5px 30px; border-radius: 10px; border: 2px solid var(--gold-dark);
         }
 
-        /* NEW: Custom Alert Styling */
+        /* Modal Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            font-family: 'Teko', sans-serif;
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid var(--gold-main);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gold-dark);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 2em;
+            color: var(--gold-light);
+        }
+        .modal-close-button {
+            background: var(--red);
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .modal-input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            font-size: 1.5em;
+            font-family: 'Teko', sans-serif;
+            border-radius: 5px;
+            border: 2px solid var(--gold-dark);
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+        .modal-submit-button {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.8em;
+            padding: 8px 40px;
+            background: linear-gradient(180deg, #f8e08e, var(--gold-main));
+            color: var(--text-dark);
+            border: 2px solid var(--gold-dark);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Custom Alert Styling */
         #custom-alert {
             position: fixed;
             top: 0;
@@ -317,9 +408,9 @@
     <div class="game-wrapper">
         <div class="top-bar">
             <div class="player-info">
-                <img src="https://placehold.co/60x60/1c2a39/fde89a?text=P" alt="Avatar" class="avatar">
+                <img src="https://placehold.co/60x60/1c2a39/fde89a?text=P" alt="Avatar" class="avatar" id="player-avatar">
                 <div>
-                    <div class="player-name">Player123</div>
+                    <div class="player-name" id="player-name-display">Player123</div>
                     <div class="balance" id="player-balance">0</div>
                 </div>
             </div>
@@ -389,7 +480,7 @@
                 <img src="https://i.imgur.com/3ZmP0fL.png" alt="Menu" class="icon" onerror="this.style.display='none'">
                 <span>Menu</span>
             </button>
-            <button class="menu-button">
+            <button class="menu-button" id="open-giftcode-modal">
                 <img src="https://i.imgur.com/Y1gB2bH.png" alt="Giftcode" class="icon" onerror="this.style.display='none'">
                 <span>Giftcode</span>
             </button>
@@ -405,10 +496,37 @@
         </footer>
     </div>
     
-    <!-- NEW: Custom Alert Modal -->
     <div id="custom-alert">
         <div id="custom-alert-box">
             <p id="custom-alert-message"></p>
+        </div>
+    </div>
+
+    <!-- RE-ADDED: Giftcode Modal -->
+    <div class="modal-overlay" id="giftcode-modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nhập Giftcode</h2>
+                <button class="modal-close-button" id="close-giftcode-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="giftcode-input" class="modal-input" placeholder="Nhập code của bạn...">
+                <button id="giftcode-submit" class="modal-submit-button">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RE-ADDED: Change Name Modal -->
+    <div class="modal-overlay" id="change-name-modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Đổi Tên Nhân Vật</h2>
+                <button class="modal-close-button" id="close-change-name-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="change-name-input" class="modal-input" placeholder="Nhập tên mới...">
+                <button id="change-name-submit" class="modal-submit-button">Xác nhận</button>
+            </div>
         </div>
     </div>
 
@@ -430,7 +548,17 @@
             let secretRolls = []; 
             let isWaitingForReveal = false;
             let sessionId = 12345;
-            let autoRevealTimeout; // NEW: Timeout for auto-reveal
+            let autoRevealTimeout;
+
+            // RE-ADDED: Gift Codes
+            const giftCodes = new Map([
+                ['k20', 20000],
+                ['k50', 50000],
+                ['k100', 100000],
+                ['k200', 200000],
+                ['k500', 500000],
+                ['free_money', 1000000]
+            ]);
 
             // --- ELEMENT SELECTORS ---
             const balanceDisplay = document.getElementById('player-balance');
@@ -453,15 +581,27 @@
             const bowlCover = document.getElementById('bowl-cover');
             const bowlContainer = document.getElementById('bowl-container');
             const sessionIdDisplay = document.getElementById('session-id');
-            const depositButton = document.getElementById('deposit-button'); // NEW
-            const withdrawButton = document.getElementById('withdraw-button'); // NEW
-            const customAlert = document.getElementById('custom-alert'); // NEW
-            const customAlertMessage = document.getElementById('custom-alert-message'); // NEW
+            const depositButton = document.getElementById('deposit-button');
+            const withdrawButton = document.getElementById('withdraw-button');
+            const customAlert = document.getElementById('custom-alert');
+            const customAlertMessage = document.getElementById('custom-alert-message');
+            
+            // RE-ADDED: Modal Selectors
+            const giftcodeModalOverlay = document.getElementById('giftcode-modal-overlay');
+            const openGiftcodeModalButton = document.getElementById('open-giftcode-modal');
+            const closeGiftcodeModalButton = document.getElementById('close-giftcode-modal');
+            const giftcodeInput = document.getElementById('giftcode-input');
+            const giftcodeSubmitButton = document.getElementById('giftcode-submit');
+            const playerAvatar = document.querySelector('.avatar');
+            const playerNameDisplay = document.querySelector('.player-name');
+            const changeNameModalOverlay = document.getElementById('change-name-modal-overlay');
+            const closeChangeNameModalButton = document.getElementById('close-change-name-modal');
+            const changeNameInput = document.getElementById('change-name-input');
+            const changeNameSubmitButton = document.getElementById('change-name-submit');
             
             // --- UTILITY FUNCTIONS ---
             const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN').format(amount);
 
-            // NEW: Custom Alert Function
             const showAlert = (message, isLarge = false, duration = 0) => {
                 customAlertMessage.textContent = message;
                 customAlertMessage.classList.toggle('large', isLarge);
@@ -617,10 +757,9 @@
 
                 setTimeout(() => {
                     bowlContainer.classList.remove('shaking');
-                    // NEW: Auto-reveal after 2 seconds
                     autoRevealTimeout = setTimeout(() => {
                         if (isWaitingForReveal) {
-                            revealBowl(true); // true for auto-reveal
+                            revealBowl(true);
                         }
                     }, 2000);
                 }, 500);
@@ -656,14 +795,13 @@
                     updateHistoryBar();
                     betOnTai = 0; betOnXiu = 0;
                     updateDisplays();
-                    setTimeout(startNewRound, 3000); // UPDATED: New round after 3 seconds
+                    setTimeout(startNewRound, 3000);
                 }, 1000); 
             };
             
-            // NEW: Unified bowl reveal function
             const revealBowl = (isAuto = false) => {
                 if (!isWaitingForReveal) return;
-                clearTimeout(autoRevealTimeout); // Clear auto-reveal if manually opened
+                clearTimeout(autoRevealTimeout);
                 isWaitingForReveal = false;
                 
                 bowlCover.style.transition = 'transform 0.3s ease';
@@ -719,7 +857,7 @@
                 }, 700); 
             };
 
-            // NEW: Event Listeners for menu buttons
+            // --- MENU BUTTON LOGIC ---
             depositButton.addEventListener('click', () => {
                 showAlert("Đây chỉ là web demo, đừng nghiện cờ bạc nhé!");
             });
@@ -728,6 +866,64 @@
                 showAlert("CÓ CÁI NỊT", true, 2000);
             });
             
+            // RE-ADDED: GIFTCODE MODAL LOGIC
+            openGiftcodeModalButton.addEventListener('click', () => {
+                giftcodeModalOverlay.classList.add('visible');
+            });
+
+            const closeGiftcodeModal = () => {
+                giftcodeModalOverlay.classList.remove('visible');
+            };
+
+            closeGiftcodeModalButton.addEventListener('click', closeGiftcodeModal);
+            giftcodeModalOverlay.addEventListener('click', (e) => {
+                if (e.target === giftcodeModalOverlay) {
+                    closeGiftcodeModal();
+                }
+            });
+
+            giftcodeSubmitButton.addEventListener('click', () => {
+                const code = giftcodeInput.value.trim().toLowerCase();
+                if (giftCodes.has(code)) {
+                    const amount = giftCodes.get(code);
+                    playerBalance += amount;
+                    showAlert(`Chúc mừng! Bạn đã nhận được ${formatCurrency(amount)}.`);
+                    giftCodes.delete(code);
+                    updateDisplays();
+                    closeGiftcodeModal();
+                } else {
+                    showAlert("Giftcode không hợp lệ hoặc đã được sử dụng!");
+                }
+                giftcodeInput.value = '';
+            });
+
+            // RE-ADDED: CHANGE NAME MODAL LOGIC
+            playerAvatar.addEventListener('click', () => {
+                changeNameModalOverlay.classList.add('visible');
+                changeNameInput.value = playerNameDisplay.textContent;
+            });
+            
+            const closeChangeNameModal = () => {
+                changeNameModalOverlay.classList.remove('visible');
+            };
+
+            closeChangeNameModalButton.addEventListener('click', closeChangeNameModal);
+            changeNameModalOverlay.addEventListener('click', (e) => {
+                if (e.target === changeNameModalOverlay) {
+                    closeChangeNameModal();
+                }
+            });
+
+            changeNameSubmitButton.addEventListener('click', () => {
+                const newName = changeNameInput.value.trim();
+                if (newName) {
+                    playerNameDisplay.textContent = newName;
+                    closeChangeNameModal();
+                } else {
+                    showAlert("Tên không được để trống!");
+                }
+            });
+
             // --- INITIALIZE GAME ---
             updateDisplays();
             updateHistoryBar();
